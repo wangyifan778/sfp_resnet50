@@ -1,6 +1,7 @@
 %%%%%%%%%%%%%%%%%%%%%%%input(224*224*3)%%%%%%%%%%%%%%%%%%%%%%%
-image = imread('test101.jpg');
-image = single(image); %kenengmeiyouwenti
+clear;
+image = imread('ILSVRC2012_val_00000018.JPEG');
+image = single(image); 
 modelfile = 'resnet_50.h5';
 lgraph = importKerasLayers(modelfile,'ImportWeights',true);
 eps = 1.0010e-5;
@@ -87,7 +88,7 @@ bias = lgraph.Layers(177,1).Bias;
 image = full_connect(weights,bias,image);
 
 %softmax
-predict = softmax_out(image);
+predict = softmax_out(image)
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%function%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %block
@@ -341,14 +342,15 @@ function [image] = full_connect(weights,bias,image)
   filters = size_weight(2); %2048
   kernels = size_weight(1); %1000
 
-  image_size = size(image);%2048
-  full_out = zeros(kernels);
+  image_size = size(image);
+  image_size = image_size(2);%2048
+  full_out = zeros(1,kernels);
 
   for full_size = 1:kernels
     for filter_full = 1:filters
-      full_out(full_size) = full_out(full_size) + image(filter_full) * weights(full_size,filter_full);
+      full_out(1,full_size) = full_out(1,full_size) + image(1,filter_full) * weights(full_size,filter_full);
     end
-    full_out(full_size) = full_out(full_size) + bias(full_size);
+    full_out(1,full_size) = full_out(1,full_size) + bias(full_size,1);
   end
 end
 
@@ -446,17 +448,18 @@ function [image_average_pool] = global_average_pool(image)
   image_size = image_s(1);
   
   for filter_ave_pool = 1:filters
-    image_average_pool(filter_ave_pool) = mean(image(:,:,filter_ave_pool),'all');
+    image_average_pool(1,filter_ave_pool) = mean(image(:,:,filter_ave_pool),'all');
   end
 end
 
 %softmax
 function [predict] = softmax_out(image)
-  image_size = size(image); %1000
+  image_size = size(image);
+  image_size = image_size(2); %1000
   sum_exp = sum(exp(image));
   
   for predict_n = 1:image_size
-    predict(predict_n) = exp(image(predict_n)) / sum_exp;
+    predict(1,predict_n) = exp(image(1,predict_n)) / sum_exp;
   end
 end
 
