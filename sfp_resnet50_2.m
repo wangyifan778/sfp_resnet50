@@ -1,5 +1,5 @@
 %%%%%%%%%%%%%%%%%%%%%%%input(224*224*3)%%%%%%%%%%%%%%%%%%%%%%%
-image = imread('test101.jpg');
+image = imread('ILSVRC2012_val_00000018.JPEG');
 image = single(image); %kenengmeiyouwenti
 modelfile = 'resnet_50.h5';
 lgraph = importKerasLayers(modelfile,'ImportWeights',true);
