@@ -78,8 +78,17 @@ image = block(image,156,157,1,0,159,160,1,162,163,1,0);
 %conv5_block3
 image = block(image,166,167,1,0,169,170,1,172,173,1,0);
 
-size(image)
-image(:,:,5)
+%avg_pool
+image = global_average_pool(image); %[2048]
+
+%full_connect
+weights = lgraph.Layers(177,1).Weights; 
+bias = lgraph.Layers(177,1).Bias; 
+image = full_connect(weights,bias,image);
+
+%softmax
+predict = softmax_out(image);
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%function%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %block
 function [image] = block1(image,w0,tr0,strides0,padding0,w1,tr1,strides1,padding1,w2,tr2,strides2,w3,tr3,strides3,padding3)
@@ -325,6 +334,24 @@ function [image_conv_out] = conv_padding_same(weights,bias,strides,image)
     end
   end
 end
+
+%full_connected_layer
+function [image] = full_connect(weights,bias,image)
+  size_weight = size(weights); %[1000*2048]
+  filters = size_weight(2); %2048
+  kernels = size_weight(1); %1000
+
+  image_size = size(image);%2048
+  full_out = zeros(kernels);
+
+  for full_size = 1:kernels
+    for filter_full = 1:filters
+      full_out(full_size) = full_out(full_size) + image(filter_full) * weights(full_size,filter_full);
+    end
+    full_out(full_size) = full_out(full_size) + bias(full_size);
+  end
+end
+
 %ZeroPadding
 function [image_padding_out] = zero_padding(image,padding_size)
   image_filter = size(image);
@@ -411,3 +438,25 @@ function [image_pool] = maxpooling(image,strides,pool_size,padding_size)
     end
   end
 end
+
+%global_average_pool
+function [image_average_pool] = global_average_pool(image)
+  image_s = size(image);
+  filters = image_s(3);
+  image_size = image_s(1);
+  
+  for filter_ave_pool = 1:filters
+    image_average_pool(filter_ave_pool) = mean(image(:,:,filter_ave_pool),'all');
+  end
+end
+
+%softmax
+function [predict] = softmax_out(image)
+  image_size = size(image); %1000
+  sum_exp = sum(exp(image));
+  
+  for predict_n = 1:image_size
+    predict(predict_n) = exp(image(predict_n)) / sum_exp;
+  end
+end
+
