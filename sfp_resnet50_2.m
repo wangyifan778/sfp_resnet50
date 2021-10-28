@@ -54,7 +54,32 @@ image = block(image,72,73,1,0,75,76,1,78,79,1,0);
 %conv4_block1
 image = block1(image,88,90,2,0,82,83,2,0,85,86,1,89,91,1,0);
 
-image(5,5,1)
+%conv4_block2
+image = block(image,94,95,1,0,97,98,1,100,101,1,0);
+
+%conv4_block3
+image = block(image,104,105,1,0,107,108,1,110,111,1,0);
+
+%conv4_block4
+image = block(image,114,115,1,0,117,118,1,120,121,1,0);
+
+%conv4_block5
+image = block(image,124,125,1,0,127,128,1,130,131,1,0);
+
+%conv4_block6
+image = block(image,134,135,1,0,137,138,1,140,141,1,0);
+
+%conv5_block1
+image = block1(image,150,152,2,0,144,145,2,0,147,148,1,151,153,1,0);
+
+%conv5_block2
+image = block(image,156,157,1,0,159,160,1,162,163,1,0);
+
+%conv5_block3
+image = block(image,166,167,1,0,169,170,1,172,173,1,0);
+
+size(image)
+image(:,:,5)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%function%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %block
 function [image] = block1(image,w0,tr0,strides0,padding0,w1,tr1,strides1,padding1,w2,tr2,strides2,w3,tr3,strides3,padding3)
@@ -183,7 +208,7 @@ function [weights,bias] = bn_merge(weights,bias,trained_mean,trained_variance,be
   filters = size_weight(4); %64
   kernels = size_weight(1); %7
 
-  for weight_filters = 1:filters
+  parfor weight_filters = 1:filters
     for weight_channels = 1:image_channels
       for weight_row = 1:kernels
         for weight_line = 1:kernels
@@ -211,7 +236,7 @@ function [image_conv_out] = conv(weights,bias,strides,image,padding_size)
   image_conv_line = ceil(image_conv_row);
   image_conv_row = image_conv_line;
 
-  for filter_conv = 1:filters
+  parfor filter_conv = 1:filters
     for image_conv_channels = 1:image_channels
       for image_conv_r = 1:image_conv_row
         for image_conv_l = 1:image_conv_line
@@ -236,7 +261,7 @@ function [image_conv_out] = conv(weights,bias,strides,image,padding_size)
   end
 
   image_conv_out = zeros(image_conv_row,image_conv_line,filters);
-  for filter_conv = 1:filters
+  parfor filter_conv = 1:filters
     for image_conv_r = 1:image_conv_row
       for image_conv_l = 1:image_conv_line
         for image_conv_channels = 1:image_channels
@@ -264,7 +289,7 @@ function [image_conv_out] = conv_padding_same(weights,bias,strides,image)
   image_conv_line = ceil(image_conv_row);
   image_conv_row = image_conv_line;
 
-  for filter_conv = 1:filters
+  parfor filter_conv = 1:filters
     for image_conv_channels = 1:image_channels
       for image_conv_r = 1:image_conv_row
         for image_conv_l = 1:image_conv_line
@@ -289,7 +314,7 @@ function [image_conv_out] = conv_padding_same(weights,bias,strides,image)
   end
 
   image_conv_out = zeros(image_conv_row,image_conv_line,filters);
-  for filter_conv = 1:filters
+  parfor filter_conv = 1:filters
     for image_conv_r = 1:image_conv_row
       for image_conv_l = 1:image_conv_line
         for image_conv_channels = 1:image_channels
@@ -305,7 +330,7 @@ function [image_padding_out] = zero_padding(image,padding_size)
   image_filter = size(image);
   filters = image_filter(3);
 
-  for filter_padding = 1:filters
+  parfor filter_padding = 1:filters
     image_padding = image(:,:,filter_padding);
     image_padding = padarray(image_padding, [padding_size padding_size]);
     image_padding_out(:,:,filter_padding) = image_padding;
@@ -325,7 +350,7 @@ function [image_padding_out] = zero_padding_same(image,strides,kernels)
   padding_left = ceil(padding_width / 2);
   padding_right = padding_width - padding_left;
   
-  for filter_padding = 1:filters
+  parfor filter_padding = 1:filters
     image_padding = image(:,:,filter_padding);
     image_padding = padarray(image_padding, [padding_top padding_left],'pre');
     image_padding = padarray(image_padding, [padding_down padding_right],'post');
@@ -340,7 +365,7 @@ function [image_relu] = relu(image)
   image_row = image_size(1);
   image_line = image_size(2);
   image_relu = image;
-  for filter_relu = 1:filters
+  parfor filter_relu = 1:filters
     for image_relu_r = 1:image_row
       for image_relu_l = 1:image_line
         if image_relu(image_relu_r,image_relu_l,filter_relu) < 0
@@ -364,7 +389,7 @@ function [image_pool] = maxpooling(image,strides,pool_size,padding_size)
   image_pool_row = image_pool_line;
   image_pool = zeros(image_pool_row,image_pool_line,filters);
 
-  for filter_pool = 1:filters
+  parfor filter_pool = 1:filters
     for image_pool_r = 1:image_pool_row
       for image_pool_l = 1:image_pool_line
         image_r = 1 + strides * (image_pool_r - 1);
