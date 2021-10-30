@@ -1,94 +1,133 @@
 %%%%%%%%%%%%%%%%%%%%%%%input(224*224*3)%%%%%%%%%%%%%%%%%%%%%%%
 clear;
-image = imread('ILSVRC2012_val_00000018.JPEG');
-image = single(image); 
-modelfile = 'resnet_50.h5';
-lgraph = importKerasLayers(modelfile,'ImportWeights',true);
-eps = 1.0010e-5;
-%original image:float32_to_sfp
+image_file = fopen('val.txt');
+image_name = strings;
+image_label = zeros(1,50000);
+i = 1;
+tline = fgetl(image_file);
+while ischar(tline)
+  image_name(i) = tline(1:28);
+  image_label(i) = str2num(tline(30:end));
+  tline = fgetl(image_file);
+  i = i + 1;
+end
+fclose(image_file);
 
-%conv1_zeropadding(230*230*3),(3,3,3,3)
-image = zero_padding(image,3);
+for j = 1:50000
+  image = imread('./imagenet/' + image_name(j));
+  image = imresize(image,[224 224]);
+  image = single(image); 
+  modelfile = 'resnet_50.h5';
+  lgraph = importKerasLayers(modelfile,'ImportWeights',true);
+  eps = 1.0010e-5;
+  %original image:float32_to_sfp
 
-%conv1_bn merge
-weights = lgraph.Layers(3,1).Weights; %7*7*3*64
-bias = lgraph.Layers(3,1).Bias; %1*1*64
-trained_mean = lgraph.Layers(4,1).TrainedMean;
-trained_variance = lgraph.Layers(4,1).TrainedVariance;
-beta = lgraph.Layers(4,1).Offset;
-gamma = lgraph.Layers(4,1).Scale;
-[weights,bias] = bn_merge(weights,bias,trained_mean,trained_variance,beta,gamma);
+  %conv1_zeropadding(230*230*3),(3,3,3,3)
+  image = zero_padding(image,3);
 
-%conv1_conv
-image  = conv(weights,bias,2,image,0);
+  %conv1_bn merge
+  weights = lgraph.Layers(3,1).Weights; %7*7*3*64
+  bias = lgraph.Layers(3,1).Bias; %1*1*64
+  trained_mean = lgraph.Layers(4,1).TrainedMean;
+  trained_variance = lgraph.Layers(4,1).TrainedVariance;
+  beta = lgraph.Layers(4,1).Offset;
+  gamma = lgraph.Layers(4,1).Scale;
+  [weights,bias] = bn_merge(weights,bias,trained_mean,trained_variance,beta,gamma);
 
-%conv1_relu
-image = relu(image);
+  %conv1_conv
+  image  = conv(weights,bias,2,image,0);
 
-%pool1_pad
-image = zero_padding(image,1);
+  %conv1_relu
+  image = relu(image);
 
-%pool1_pool
-image = maxpooling(image,2,3,0);
+  %pool1_pad
+  image = zero_padding(image,1);
 
-%conv2_block1
-image = block1(image,14,16,1,0,8,9,1,0,11,12,1,15,17,1,0);
+  %pool1_pool
+  image = maxpooling(image,2,3,0);
 
-%conv2_block2
-image = block(image,20,21,1,0,23,24,1,26,27,1,0);
+  %conv2_block1
+  image = block1(image,14,16,1,0,8,9,1,0,11,12,1,15,17,1,0);
 
-%conv2_block3
-image = block(image,30,31,1,0,33,34,1,36,37,1,0);
+  %conv2_block2
+  image = block(image,20,21,1,0,23,24,1,26,27,1,0);
 
-%conv3_block1
-image = block1(image,46,48,2,0,40,41,2,0,43,44,1,47,49,1,0);
+  %conv2_block3
+  image = block(image,30,31,1,0,33,34,1,36,37,1,0);
 
-%conv3_block2
-image = block(image,52,53,1,0,55,56,1,58,59,1,0);
+  %conv3_block1
+  image = block1(image,46,48,2,0,40,41,2,0,43,44,1,47,49,1,0);
 
-%conv3_block3
-image = block(image,62,63,1,0,65,66,1,68,69,1,0);
+  %conv3_block2
+  image = block(image,52,53,1,0,55,56,1,58,59,1,0);
 
-%conv3_block4
-image = block(image,72,73,1,0,75,76,1,78,79,1,0);
+  %conv3_block3
+  image = block(image,62,63,1,0,65,66,1,68,69,1,0);
 
-%conv4_block1
-image = block1(image,88,90,2,0,82,83,2,0,85,86,1,89,91,1,0);
+  %conv3_block4
+  image = block(image,72,73,1,0,75,76,1,78,79,1,0);
 
-%conv4_block2
-image = block(image,94,95,1,0,97,98,1,100,101,1,0);
+  %conv4_block1
+  image = block1(image,88,90,2,0,82,83,2,0,85,86,1,89,91,1,0);
 
-%conv4_block3
-image = block(image,104,105,1,0,107,108,1,110,111,1,0);
+  %conv4_block2
+  image = block(image,94,95,1,0,97,98,1,100,101,1,0);
 
-%conv4_block4
-image = block(image,114,115,1,0,117,118,1,120,121,1,0);
+  %conv4_block3
+  image = block(image,104,105,1,0,107,108,1,110,111,1,0);
 
-%conv4_block5
-image = block(image,124,125,1,0,127,128,1,130,131,1,0);
+  %conv4_block4
+  image = block(image,114,115,1,0,117,118,1,120,121,1,0);
 
-%conv4_block6
-image = block(image,134,135,1,0,137,138,1,140,141,1,0);
+  %conv4_block5
+  image = block(image,124,125,1,0,127,128,1,130,131,1,0);
 
-%conv5_block1
-image = block1(image,150,152,2,0,144,145,2,0,147,148,1,151,153,1,0);
+  %conv4_block6
+  image = block(image,134,135,1,0,137,138,1,140,141,1,0);
 
-%conv5_block2
-image = block(image,156,157,1,0,159,160,1,162,163,1,0);
+  %conv5_block1
+  image = block1(image,150,152,2,0,144,145,2,0,147,148,1,151,153,1,0);
 
-%conv5_block3
-image = block(image,166,167,1,0,169,170,1,172,173,1,0);
+  %conv5_block2
+  image = block(image,156,157,1,0,159,160,1,162,163,1,0);
 
-%avg_pool
-image = global_average_pool(image); %[2048]
+  %conv5_block3
+  image = block(image,166,167,1,0,169,170,1,172,173,1,0);
 
-%full_connect
-weights = lgraph.Layers(177,1).Weights; 
-bias = lgraph.Layers(177,1).Bias; 
-image = full_connect(weights,bias,image);
+  %avg_pool
+  image = global_average_pool(image); %[2048]
 
-%softmax
-predict = softmax_out(image)
+  %full_connect
+  weights = lgraph.Layers(177,1).Weights; 
+  bias = lgraph.Layers(177,1).Bias; 
+  image = full_connect(weights,bias,image);
+
+  %softmax
+  predict = softmax_out(image);
+
+  %TOP1
+  result_top1 = zeros(1,50000);
+  [pred_acc,pred_label] = max(predict);
+  if pred_label - 1 == image_label
+    result_top1(j) = 1;
+  end
+  
+  %TOP5
+  result_top5 = zeros(1,50000);
+  [b,pred_label_top5]=sort(predict,'descend');
+  pred_label_top5 = pred_label_top5 -1;
+  if find(pred_label_top5(1:5) == image_label)
+    result_top5 = 1;
+  else
+    result_top5 = 0;  
+  end
+end
+
+%TOP1_accuracy
+top1_acc = sum(result_top1) / 50000;
+
+%TOP5_accuracy
+top5_acc = sum(result_top5) / 50000;
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%function%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %block
@@ -337,13 +376,10 @@ function [image_conv_out] = conv_padding_same(weights,bias,strides,image)
 end
 
 %full_connected_layer
-function [image] = full_connect(weights,bias,image)
+function [full_out] = full_connect(weights,bias,image)
   size_weight = size(weights); %[1000*2048]
-  filters = size_weight(2); %2048
   kernels = size_weight(1); %1000
-
-  image_size = size(image);
-  image_size = image_size(2);%2048
+  filters = size_weight(2); %2048
   full_out = zeros(1,kernels);
 
   for full_size = 1:kernels
@@ -445,8 +481,7 @@ end
 function [image_average_pool] = global_average_pool(image)
   image_s = size(image);
   filters = image_s(3);
-  image_size = image_s(1);
-  
+  image_average_pool = zeros(1,filters);
   for filter_ave_pool = 1:filters
     image_average_pool(1,filter_ave_pool) = mean(image(:,:,filter_ave_pool),'all');
   end
@@ -457,7 +492,7 @@ function [predict] = softmax_out(image)
   image_size = size(image);
   image_size = image_size(2); %1000
   sum_exp = sum(exp(image));
-  
+  predict = zeros(1,image_size);
   for predict_n = 1:image_size
     predict(1,predict_n) = exp(image(1,predict_n)) / sum_exp;
   end
