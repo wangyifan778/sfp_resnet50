@@ -108,7 +108,7 @@ for j = 1:50000
   %TOP1
   result_top1 = zeros(1,50000);
   [pred_acc,pred_label] = max(predict);
-  if pred_label - 1 == image_label
+  if pred_label - 1 == image_label(j)
     result_top1(j) = 1;
   end
   
@@ -116,7 +116,7 @@ for j = 1:50000
   result_top5 = zeros(1,50000);
   [b,pred_label_top5]=sort(predict,'descend');
   pred_label_top5 = pred_label_top5 -1;
-  if find(pred_label_top5(1:5) == image_label)
+  if find(pred_label_top5(1:5) == image_label(j))
     result_top5 = 1;
   else
     result_top5 = 0;  
