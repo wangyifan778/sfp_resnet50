@@ -117,9 +117,9 @@ for j = 1:50000
   [b,pred_label_top5]=sort(predict,'descend');
   pred_label_top5 = pred_label_top5 -1;
   if find(pred_label_top5(1:5) == image_label(j))
-    result_top5 = 1;
+    result_top5(j) = 1;
   else
-    result_top5 = 0;  
+    result_top5(j) = 0;  
   end
 end
 
