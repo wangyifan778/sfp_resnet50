@@ -394,8 +394,11 @@ end
 %ZeroPadding
 function [image_padding_out] = zero_padding(image,padding_size)
   image_filter = size(image);
-  filters = image_filter(3);
-
+  if length(image_filter) == 3
+    filters = image_filter(3);
+  else
+    filters = 1;
+  end
   parfor filter_padding = 1:filters
     image_padding = image(:,:,filter_padding);
     image_padding = padarray(image_padding, [padding_size padding_size]);
@@ -406,7 +409,11 @@ end
 %zeropadding_same
 function [image_padding_out] = zero_padding_same(image,strides,kernels)
   image_size = size(image);
-  filters = image_size(3); 
+  if length(image_size) == 3
+    filters = image_size(3);
+  else
+    filters = 1;
+  end
   image_size = image_size(1);
 
   padding_height = (floor(image_size / strides) - 1) * strides + kernels - image_size;
@@ -427,7 +434,11 @@ end
 %relu
 function [image_relu] = relu(image)
   image_size = size(image);
-  filters = image_size(3);
+  if length(image_size) == 3
+    filters = image_size(3);
+  else
+    filters = 1;
+  end
   image_row = image_size(1);
   image_line = image_size(2);
   image_relu = image;
@@ -448,7 +459,11 @@ function [image_pool] = maxpooling(image,strides,pool_size,padding_size)
   image = zero_padding(image,padding_size);
 
   image_s = size(image);
-  filters = image_s(3);
+  if length(image_s) == 3
+    filters = image_s(3);
+  else
+    filters = 1;
+  end
   image_size = image_s(1);
   image_pool_row = (image_size - pool_size + 1) / strides;
   image_pool_line = ceil(image_pool_row);
@@ -481,7 +496,11 @@ end
 %global_average_pool
 function [image_average_pool] = global_average_pool(image)
   image_s = size(image);
-  filters = image_s(3);
+  if length(image_s) == 3
+    filters = image_s(3);
+  else
+    filters = 1;
+  end
   image_average_pool = zeros(1,filters);
   for filter_ave_pool = 1:filters
     image_average_pool(1,filter_ave_pool) = mean(image(:,:,filter_ave_pool),'all');
