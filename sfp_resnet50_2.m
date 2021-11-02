@@ -17,9 +17,20 @@ result_top1 = zeros(1,50000);
 result_top5 = zeros(1,50000);
 
 for j = 1:50000
-  image = imread('./imagenet/' + image_name(j));
-  image = imresize(image,[224 224]);
-  image = single(image); 
+  pic = imread('./imagenet/' + image_name(j));
+  pic = imresize(pic,[224 224]);
+  pic = single(pic); 
+  image_size = size(pic);
+  
+  %gray_to_three_channels
+  if length(image_size) == 2
+    image(:,:,1) = pic;
+    image(:,:,2) = pic;
+    image(:,:,3) = pic;
+  else
+      image = pic;
+  end
+  
   modelfile = 'resnet_50.h5';
   lgraph = importKerasLayers(modelfile,'ImportWeights',true);
   eps = 1.0010e-5;
@@ -395,7 +406,6 @@ end
 function [image_padding_out] = zero_padding(image,padding_size)
   image_filter = size(image);
   filters = image_filter(3);
-
   parfor filter_padding = 1:filters
     image_padding = image(:,:,filter_padding);
     image_padding = padarray(image_padding, [padding_size padding_size]);
@@ -406,7 +416,7 @@ end
 %zeropadding_same
 function [image_padding_out] = zero_padding_same(image,strides,kernels)
   image_size = size(image);
-  filters = image_size(3); 
+  filters = image_size(3);
   image_size = image_size(1);
 
   padding_height = (floor(image_size / strides) - 1) * strides + kernels - image_size;
