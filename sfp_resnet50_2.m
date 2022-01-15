@@ -16,7 +16,8 @@ fclose(image_file);
 result_top1 = zeros(1,50000);
 result_top5 = zeros(1,50000);
 
-for j = 1:50000
+% for j = 1:50000
+j = 34;
   pic = imread('./imagenet/' + image_name(j));
   pic = imresize(pic,[224 224]);
   pic = single(pic); 
@@ -114,7 +115,7 @@ for j = 1:50000
   %full_connect
   weights = lgraph.Layers(177,1).Weights; 
   bias = lgraph.Layers(177,1).Bias; 
-  image = full_connect(weights,bias,image);
+  image = full_connect(weights,bias,image)
 
   %softmax
   predict = softmax_out(image);
@@ -133,13 +134,13 @@ for j = 1:50000
   else
     result_top5(j) = 0;  
   end
-end
-
-%TOP1_accuracy
-top1_acc = sum(result_top1) / 50000;
-
-%TOP5_accuracy
-top5_acc = sum(result_top5) / 50000;
+% end
+% 
+% %TOP1_accuracy
+% top1_acc = sum(result_top1) / 50000;
+% 
+% %TOP5_accuracy
+% top5_acc = sum(result_top5) / 50000;
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%function%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %block
